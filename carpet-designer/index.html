@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>نقشه‌کش هوشمند فرش — تطبیق با پالت نخ کارخانه</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <p class="kicker">طراحی نقشه فرش ماشینی</p>
+    <h1>نقشه‌کش هوشمند فرش</h1>
+    <p class="sub">یک عکس از تولید فعلی کارخانه بدهید تا پالت رنگ نخ آن استخراج شود، سپس عکس طرح
+    دلخواه مشتری را بدهید تا نقشه رنگی (Point Paper) ساخته شده و تنها از رنگ‌های موجود کارخانه
+    استفاده کند — آماده برای شروع برنامه‌نویسی دستگاه بافت.</p>
+  </div>
+</header>
+
+<main>
+  <!-- STEP 1 — FACTORY PALETTE -->
+  <section class="panel" id="palette-panel">
+    <h2><span class="step">1</span> پالت نخ کارخانه</h2>
+    <p class="hint">یک عکس واضح از یکی از فرش‌های تولید شده توسط کارخانه آپلود کنید. برنامه رنگ‌های
+    اصلی نخ‌های استفاده‌شده را از روی این عکس استخراج می‌کند.</p>
+
+    <div class="grid">
+      <label>عکس نمونه تولید کارخانه
+        <input type="file" id="factory-image" accept="image/*" />
+      </label>
+      <label>تعداد رنگ‌های پالت
+        <input type="range" id="palette-count" min="4" max="24" value="12" />
+        <span id="palette-count-label">12 رنگ</span>
+      </label>
+    </div>
+
+    <div class="preview-row">
+      <canvas id="factory-canvas" class="preview-canvas"></canvas>
+      <button id="extract-btn" class="btn-gold" disabled>استخراج پالت رنگی</button>
+    </div>
+
+    <div class="palette-section">
+      <h3>پالت استخراج‌شده</h3>
+      <div class="palette-grid" id="factory-palette"></div>
+      <div class="palette-add">
+        <input type="color" id="manual-color" value="#888888" />
+        <button id="add-color-btn" class="btn-ghost">افزودن رنگ دستی</button>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <h3>پروفایل کارخانه (ذخیره / بارگذاری پالت)</h3>
+      <div class="grid">
+        <label>نام پروفایل
+          <input type="text" id="profile-name" placeholder="مثلاً: کارخانه فرش الف" />
+        </label>
+        <label>پروفایل‌های ذخیره‌شده
+          <select id="profile-select"><option value="">— انتخاب کنید —</option></select>
+        </label>
+      </div>
+      <div class="actions-inline">
+        <button id="save-profile-btn" class="btn-ghost">ذخیره پالت فعلی</button>
+        <button id="load-profile-btn" class="btn-ghost">بارگذاری</button>
+        <button id="delete-profile-btn" class="btn-ghost danger">حذف پروفایل</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2 — CUSTOMER DESIGN -->
+  <section class="panel" id="design-panel">
+    <h2><span class="step">2</span> طرح مورد نظر مشتری</h2>
+    <p class="hint">عکس فرش یا طرحی که مشتری می‌خواهد را آپلود کنید.</p>
+    <label>عکس طرح مشتری
+      <input type="file" id="design-image" accept="image/*" />
+    </label>
+    <div class="preview-row">
+      <canvas id="design-canvas" class="preview-canvas"></canvas>
+    </div>
+  </section>
+
+  <!-- STEP 3 — GRID SETTINGS -->
+  <section class="panel" id="size-panel">
+    <h2><span class="step">3</span> تنظیمات نقشه و تراکم بافت</h2>
+    <div class="grid">
+      <label>عرض فرش (سانتی‌متر)
+        <input type="number" id="size-width" value="100" min="10" />
+      </label>
+      <label>طول فرش (سانتی‌متر)
+        <input type="number" id="size-height" value="150" min="10" />
+      </label>
+      <label>رج‌شمار (تعداد گره در هر ۷ سانتی‌متر)
+        <input type="number" id="size-density" value="40" min="10" max="120" />
+      </label>
+    </div>
+    <p class="hint">
+      تعداد گره محاسبه‌شده: <strong id="computed-cols">—</strong> ستون ×
+      <strong id="computed-rows">—</strong> ردیف
+      (می‌توانید این مقادیر را در صورت نیاز دستی ویرایش کنید)
+    </p>
+    <div class="grid">
+      <label>تعداد ستون (چله)
+        <input type="number" id="manual-cols" min="10" max="500" />
+      </label>
+      <label>تعداد ردیف (رج)
+        <input type="number" id="manual-rows" min="10" max="500" />
+      </label>
+    </div>
+    <button id="generate-btn" class="btn-gold">تولید نقشه رنگی</button>
+  </section>
+
+  <!-- OUTPUT -->
+  <section class="panel" id="output-panel" style="display:none;">
+    <h2><span class="step">4</span> نقشه نهایی</h2>
+    <p class="hint">برای اصلاح دستی یک خانه، ابتدا روی رنگ مورد نظر در پالت کلیک کنید (به‌عنوان قلم
+    فعال) سپس روی خانه‌های نقشه کلیک یا درگ کنید.</p>
+
+    <div class="toolbar">
+      <label>زوم
+        <input type="range" id="zoom" min="3" max="20" value="8" />
+      </label>
+      <span id="grid-info"></span>
+    </div>
+
+    <div class="palette-grid" id="brush-palette"></div>
+
+    <div class="canvas-wrap">
+      <canvas id="map-canvas"></canvas>
+    </div>
+
+    <h3>راهنمای رنگ (Legend)</h3>
+    <table class="legend-table" id="legend-table">
+      <thead><tr><th>کد</th><th>رنگ</th><th>نام</th><th>تعداد گره</th><th>درصد</th></tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="actions">
+      <button id="export-png" class="btn-gold">دانلود تصویر نقشه (PNG)</button>
+      <button id="export-csv" class="btn-ghost">دانلود فایل داده (CSV)</button>
+      <button id="export-json" class="btn-ghost">دانلود فایل JSON</button>
+    </div>
+  </section>
+</main>
+
+<footer>نقشه‌کش هوشمند فرش — ابزار کمکی برای تبدیل طرح به نقشه قابل بافت با پالت نخ کارخانه</footer>
+<script src="app.js"></script>
+</body>
+</html>
