@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Silk Atelier — Persian Carpet Campaign Prompt Studio for Nano Banana 2</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <p class="kicker">PERSIAN ART-SILK · CAMPAIGN PROMPT STUDIO</p>
+    <h1>Silk Atelier</h1>
+    <p class="sub">Turn any carpet into a luxury photoshoot. Describe your rug, choose your scenes,
+    and get production-grade prompts engineered for <strong>Nano Banana 2</strong> in Google Flow —
+    with silk-texture language that makes heat-set art silk read like real Qom silk.</p>
+  </div>
+</header>
+
+<main>
+  <!-- STEP 1 — THE CARPET -->
+  <section class="panel" id="carpet-panel">
+    <h2><span class="step">1</span> Your Carpet</h2>
+    <p class="hint">Start from a preset that matches your inventory, then refine. Every word here is woven into each prompt.</p>
+
+    <div class="presets" id="presets"></div>
+
+    <div class="grid">
+      <label>Carpet name / style
+        <input id="c-name" placeholder="e.g. Qom Birds-of-Paradise" />
+      </label>
+      <label>Field (ground) colour
+        <input id="c-field" placeholder="e.g. deep midnight navy" />
+      </label>
+      <label>Main motif
+        <input id="c-motif" placeholder="e.g. rows of perched songbirds on branches" />
+      </label>
+      <label>Border
+        <input id="c-border" placeholder="e.g. ivory floral border with paisley corners" />
+      </label>
+      <label>Accent palette
+        <input id="c-palette" placeholder="e.g. turquoise, coral, saffron gold, rose" />
+      </label>
+      <label>Fringe
+        <input id="c-fringe" placeholder="e.g. long dense white silk fringe" />
+      </label>
+      <label>Size on camera
+        <select id="c-size">
+          <option value="small prayer-size rug (about 60 × 90 cm)">Small (60×90 cm, poshti)</option>
+          <option value="zar-o-nim rug (about 100 × 150 cm)">Zar-o-nim (100×150 cm)</option>
+          <option value="six-metre room rug (about 200 × 300 cm)" selected>6-metre (200×300 cm)</option>
+          <option value="grand palace-size carpet (about 300 × 400 cm)">Palace (300×400 cm)</option>
+        </select>
+      </label>
+      <label>Material wording
+        <select id="c-material">
+          <option value="heat-set artificial silk with the optical behaviour of genuine Qom silk" selected>Art silk — render like real silk</option>
+          <option value="pure hand-spun Qom silk">Pure silk</option>
+          <option value="bamboo silk with a soft satin lustre">Bamboo silk</option>
+          <option value="100% acrylic heat-set pile, lint-free, machine-woven with hand-knotted appearance">Acrylic heat-set (machine-made)</option>
+        </select>
+      </label>
+    </div>
+
+    <label class="check">
+      <input type="checkbox" id="c-reference" checked />
+      I will attach a photo of the rug in Flow — add a strict design-fidelity instruction to every prompt
+    </label>
+  </section>
+
+  <!-- STEP 2 — THE SCENES -->
+  <section class="panel" id="scenes-panel">
+    <h2><span class="step">2</span> Campaign Scenes</h2>
+    <p class="hint">Select the shots for your shot list. Each becomes one self-contained prompt.</p>
+    <div class="scene-filter" id="scene-filter"></div>
+    <div class="scenes" id="scenes"></div>
+  </section>
+
+  <!-- STEP 3 — DIRECTION -->
+  <section class="panel" id="direction-panel">
+    <h2><span class="step">3</span> Art Direction</h2>
+    <div class="grid">
+      <label>Mood
+        <select id="d-mood">
+          <option value="cinematic">Cinematic & dramatic</option>
+          <option value="editorial">High-fashion editorial (Vogue-style)</option>
+          <option value="heritage">Warm heritage & craftsmanship</option>
+          <option value="minimal">Minimal gallery / modern living</option>
+          <option value="opulent">Opulent royal Persian</option>
+        </select>
+      </label>
+      <label>Colour grade
+        <select id="d-grade">
+          <option value="rich">Rich & saturated (let the rug sing)</option>
+          <option value="bw-rug">Monochrome scene, full-colour rug</option>
+          <option value="golden">Golden-hour warmth</option>
+          <option value="cool">Cool desaturated luxury</option>
+          <option value="bw">Full black & white</option>
+        </select>
+      </label>
+      <label>Aspect ratio
+        <select id="d-aspect">
+          <option value="4:5">4:5 — Instagram feed</option>
+          <option value="9:16">9:16 — Story / Reel / TikTok</option>
+          <option value="3:4">3:4 — Portrait poster</option>
+          <option value="16:9">16:9 — Web banner / billboard</option>
+          <option value="1:1">1:1 — Square</option>
+          <option value="2:3">2:3 — Print</option>
+        </select>
+      </label>
+      <label>Model casting (for scenes with a model)
+        <select id="d-model">
+          <option value="an elegant Persian female model with long dark hair, sculpted brows and couture make-up">Persian female — couture</option>
+          <option value="a confident female model in an oversized black blazer and statement silver earrings">Female — black blazer editorial</option>
+          <option value="a distinguished silver-haired man in a tailored charcoal suit">Male — tailored suit</option>
+          <option value="an elderly master weaver with kind weathered hands and a quiet proud expression">Master weaver — heritage</option>
+          <option value="a stylish young couple in modern neutral fashion">Young couple — modern</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button id="generate" class="btn-gold">Generate Shot List ✦</button>
+    <button id="copy-all" class="btn-ghost" disabled>Copy all prompts</button>
+    <button id="export-json" class="btn-ghost" disabled>Export JSON</button>
+  </div>
+
+  <!-- OUTPUT -->
+  <section id="output" class="output"></section>
+
+  <section class="panel tips">
+    <h2>Google Flow / Nano Banana 2 — getting maximum realism</h2>
+    <ul>
+      <li><strong>Attach the rug photo.</strong> Upload a clean, frontal, evenly lit photo of the carpet as a reference image and keep the fidelity line in the prompt. Nano Banana 2 follows reference designs extremely well.</li>
+      <li><strong>One scene per prompt.</strong> Don't merge two shots; generate the full shot list as separate runs.</li>
+      <li><strong>Re-roll with seeds.</strong> If composition is right but texture is soft, regenerate and append: <em>"increase micro-detail in the carpet pile, individual knots visible."</em></li>
+      <li><strong>Upscale last.</strong> Generate at the campaign aspect ratio, then use Flow's upscale for print.</li>
+      <li><strong>Fix faces second.</strong> If the rug is perfect but the model isn't, use a region edit ("change only the model's face…") rather than re-rolling the whole frame.</li>
+    </ul>
+  </section>
+</main>
+
+<footer>Silk Atelier — prompt engineering for carpet campaigns · built for Nano Banana 2 (Google Flow)</footer>
+<script src="app.js"></script>
+</body>
+</html>
