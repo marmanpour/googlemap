@@ -364,6 +364,187 @@ const SCENES = [
 
 const CATEGORIES = ["All", "Model", "Car", "Creature", "Texture"];
 
+/* ---------- Cohesive deck library ----------
+   A deck is ONE continuous photoshoot: one carpet, one location, one time,
+   one light source, one model & wardrobe — full continuity across slides,
+   sequenced to pull the viewer through an entire carousel. */
+
+const DECKS = [
+  {
+    id: "mansion",
+    title: "Golden-Hour Qajar Mansion (7 slides)",
+    setting:
+      "the grand hall of an abandoned Qajar-era Persian mansion — cracked turquoise-and-rose tilework, " +
+      "tall arched windows, a pale dusty stone floor",
+    light:
+      "late golden hour: one single low shaft of warm sunlight entering through the tall western arched window, " +
+      "fine dust haze floating in the beam, everything outside the beam falling into deep warm shadow",
+    wardrobe:
+      "wearing the same floor-length ivory silk slip dress in every slide, barefoot, hair loose over one shoulder, " +
+      "no jewellery except one thin gold band",
+    slides: [
+      {
+        title: "The Arrival (hook)",
+        build: (c, d) => [
+          `SLIDE 1 — THE HOOK. The hall stands silent and dark; the sun shaft cuts diagonally across the dusty stone floor. ` +
+            `The Persian rug is frozen mid-unroll, rolling open toward the camera through the beam of light — the unrolled half ` +
+            `already blazing with colour inside the light, the still-rolled half in shadow, fringe lifting slightly with the motion, ` +
+            `a fine swirl of dust rising around it. No model in this frame. The image must make the viewer need to see what unrolls next.`,
+          `Low camera, 35 mm at f/4, the rug rushing into the foreground.`,
+        ],
+      },
+      {
+        title: "The Reveal (top-down)",
+        build: (c, d) => [
+          `SLIDE 2 — THE REVEAL. Directly overhead top-down shot: the rug now lies fully open and perfectly flat on the stone floor, ` +
+            `framed straight and frontal so its entire design is displayed edge-to-edge like a plate from a museum catalogue. ` +
+            `The sun shaft crosses the rug diagonally, splitting it into a glowing lit half and a rich shadowed half — same design, ` +
+            `two depths of colour. Her bare feet and the hem of the ivory dress enter the very edge of the frame, standing beside the rug.`,
+          `Top-down 28 mm at f/5.6, perfectly orthogonal, floor texture framing the rug.`,
+        ],
+      },
+      {
+        title: "Liquid Light (the silk proof)",
+        build: (c, d) => [
+          `SLIDE 3 — LIQUID LIGHT. Camera drops to floor level at the rug's corner, shooting along its surface at a grazing angle ` +
+            `toward the window. The sun shaft rakes across the pile, and the silk answers: broad bands of silvery sheen sweep across ` +
+            `the saturated colours where the nap changes direction, the fringe backlit into hundreds of glowing strands. ` +
+            `The mansion's arched window burns soft gold in the background blur.`,
+          `Floor-level 85 mm at f/2.8, the sheen band in tack-sharp focus, dreamy fall-off beyond.`,
+        ],
+      },
+      {
+        title: "The Touch",
+        build: (c, d) => [
+          `SLIDE 4 — THE TOUCH. ${capitalize(d.model)}, __WARDROBE__, kneels at the edge of the rug inside the light shaft and ` +
+            `sweeps her hand slowly across the pile against the nap — a bright silver wave of sheen follows her fingers, revealing ` +
+            `the deep colour beneath. Her face is softly lit from the side, eyes down on the carpet with quiet reverence; the ` +
+            `viewer feels the touch.`,
+          `Intimate 50 mm at f/2, focus on her hand and the wave of sheen, her face soft in the upper frame.`,
+        ],
+      },
+      {
+        title: "Among the Birds (macro)",
+        build: (c, d) => [
+          `SLIDE 5 — AMONG THE BIRDS. Extreme close-up inside the lit half of the rug: one single motif fills the frame, ` +
+            `every knot resolving like petit-point stitches, the pencil-thin outlines crisp, dust motes sparkling in the sun ` +
+            `just above the pile. Her fingertips rest at the corner of the frame, holding a few strands of the silk fringe ` +
+            `between them — scale and softness in one image.`,
+          `100 mm macro at f/4, raking golden light, museum-grade detail.`,
+        ],
+      },
+      {
+        title: "The Throne (hero portrait)",
+        build: (c, d) => [
+          `SLIDE 6 — THE THRONE. The hero image: she sits cross-legged and regal at the exact centre of the rug's medallion, ` +
+            `spine tall, hands resting on her knees, eyes straight into the camera. The sun shaft now falls on her and the rug ` +
+            `together — woman and carpet as one composition, the ivory dress pooling onto the silk, the hall's arches dissolving ` +
+            `into darkness behind.`,
+          `Frontal symmetrical 85 mm at f/4 at her eye level, calm, powerful, poster-worthy.`,
+        ],
+      },
+      {
+        title: "Stay (closing frame)",
+        build: (c, d) => [
+          `SLIDE 7 — THE CLOSE. Wide closing frame from the dark end of the hall: the rug glows alone in the sun shaft like ` +
+            `an island of colour, one corner softly flipped, fringe catching the light. She walks away barefoot toward the bright ` +
+            `arched doorway in the far background, half-turned for a last glance at the rug. Generous dark negative space in the ` +
+            `upper third, composed to carry a logo and a final line of campaign text added later (render no text in the image).`,
+          `Wide 35 mm at f/5.6, cinematic stillness, the goodbye that makes the viewer swipe back to slide 1.`,
+        ],
+      },
+    ],
+  },
+  {
+    id: "caravanserai",
+    title: "Midnight Caravanserai by Lantern (6 slides)",
+    setting:
+      "the inner courtyard of an ancient brick caravanserai at night — ribbed arches, worn cobblestones, " +
+      "a low wooden takht platform",
+    light:
+      "midnight: a single brass oil lantern hanging above the takht as the only light source, a warm pool of " +
+      "flame-light with soft falloff into the blue-black night, stars faint above the arches",
+    wardrobe:
+      "wearing the same long emerald velvet coat over black in every slide, hair pinned up with a gold clasp",
+    slides: [
+      {
+        title: "The Lantern (hook)",
+        build: (c, d) => [
+          `SLIDE 1 — THE HOOK. Almost total darkness between the brick arches; the single lantern is being lit by her hand ` +
+            `entering the frame, the flame catching. Below it, the rug on the takht emerges from the dark as the light blooms — ` +
+            `only its nearest edge and fringe visible yet, colours just beginning to ignite. The viewer must swipe to see the rest.`,
+          `50 mm at f/1.8, flame as the only light, deep cinematic shadow.`,
+        ],
+      },
+      {
+        title: "The Reveal",
+        build: (c, d) => [
+          `SLIDE 2 — THE REVEAL. Top-down over the takht: the rug fully revealed under the lantern's warm pool of light, ` +
+            `its complete design displayed frontal and straight, a small brass tea set with two glasses of amber tea placed ` +
+            `at one corner, steam curling up through the lantern light.`,
+          `Top-down 28 mm at f/4, light falling off gently toward the rug's edges.`,
+        ],
+      },
+      {
+        title: "Ember Sheen",
+        build: (c, d) => [
+          `SLIDE 3 — EMBER SHEEN. Grazing low angle along the rug's surface toward the lantern: the flame-light skims the pile ` +
+            `so the silk glitters like embers, sheen bands rolling across the colours, every knot casting a micro-shadow, ` +
+            `the fringe glowing like filaments.`,
+          `Floor-level 85 mm at f/2.8, lantern flaring softly in frame, tactile and warm.`,
+        ],
+      },
+      {
+        title: "Her Place",
+        build: (c, d) => [
+          `SLIDE 4 — HER PLACE. ${capitalize(d.model)}, __WARDROBE__, reclines on one elbow upon the rug, holding a tea glass, ` +
+            `eyes to camera, the lantern modelling her face and the carpet in the same warm key light — an intimate royal night.`,
+          `50 mm at f/2, chiaroscuro, Caravaggio warmth.`,
+        ],
+      },
+      {
+        title: "The Birds at Night (macro)",
+        build: (c, d) => [
+          `SLIDE 5 — DETAIL. Macro on a single motif of the rug under lantern light, knots like stitches, outlines crisp, ` +
+            `her fingers resting beside it with the tea glass's amber reflection touching the silk.`,
+          `100 mm macro at f/4, warm single-source light, intimate detail.`,
+        ],
+      },
+      {
+        title: "Goodnight (closing frame)",
+        build: (c, d) => [
+          `SLIDE 6 — THE CLOSE. Wide from across the dark courtyard: the lantern, the glowing rug on the takht and her silhouette ` +
+            `seated upon it form a single warm island under the arches and the faint stars. Upper third kept dark and clean for ` +
+            `logo and campaign text added later (render no text in the image).`,
+          `Wide 35 mm at f/2.8, silent, magnetic, the frame that earns the follow.`,
+        ],
+      },
+    ],
+  },
+];
+
+function deckContinuityBlock(deck, idx, total, c, d) {
+  return (
+    `CONTINUITY — slide ${idx + 1} of ${total} of ONE continuous photoshoot. Identical across every slide: ` +
+    `the location (${deck.setting}); the time and the single light source (${deck.light}); the model — ` +
+    `${d.model}, ${deck.wardrobe}; and the carpet itself. Identical colour grade, lens character and film grain ` +
+    `on all slides so the carousel reads as one story. In Google Flow, attach the carpet photo AND the previous ` +
+    `slide's image as references to lock consistency.`
+  );
+}
+
+function buildDeckPrompt(deck, slideIdx, c, d) {
+  const slide = deck.slides[slideIdx];
+  const parts = slide.build(c, d).map((p) => p.replace("__WARDROBE__", deck.wardrobe));
+  parts.push(deckContinuityBlock(deck, slideIdx, deck.slides.length, c, d));
+  parts.push(carpetBlock(c));
+  parts.push(silkTextureBlock());
+  if (c.reference) parts.push(fidelityBlock());
+  parts.push(MOODS[d.mood] + " " + GRADES[d.grade]);
+  parts.push(qualityBlock(d.aspect));
+  return parts.join("\n\n");
+}
+
 /* ---------- Engine ---------- */
 
 function capitalize(s) {
@@ -477,26 +658,41 @@ function generate() {
   out.innerHTML = "";
   lastResults = [];
 
-  const scenes = SCENES.filter((s) => selectedScenes.has(s.id));
-  if (!scenes.length) {
-    out.innerHTML = `<div class="prompt-card"><p>Select at least one scene above.</p></div>`;
-    return;
+  const deckId = document.getElementById("deck-select").value;
+  let items;
+  if (deckId) {
+    const deck = DECKS.find((x) => x.id === deckId);
+    items = deck.slides.map((slide, i) => ({
+      title: `Slide ${i + 1}/${deck.slides.length} — ${slide.title}`,
+      meta: deck.title,
+      prompt: buildDeckPrompt(deck, i, c, d),
+    }));
+  } else {
+    const scenes = SCENES.filter((s) => selectedScenes.has(s.id));
+    if (!scenes.length) {
+      out.innerHTML = `<div class="prompt-card"><p>Select at least one scene above, or choose a deck.</p></div>`;
+      return;
+    }
+    items = scenes.map((s, i) => ({
+      title: `Shot ${i + 1} — ${s.title}`,
+      meta: s.category.toUpperCase(),
+      prompt: buildPrompt(s, c, d),
+    }));
   }
 
-  scenes.forEach((s, i) => {
-    const prompt = buildPrompt(s, c, d);
-    lastResults.push({ shot: i + 1, scene: s.title, category: s.category, aspect: d.aspect, prompt });
+  items.forEach((it, i) => {
+    lastResults.push({ shot: i + 1, scene: it.title, category: it.meta, aspect: d.aspect, prompt: it.prompt });
 
     const card = document.createElement("div");
     card.className = "prompt-card";
     const header = document.createElement("header");
-    header.innerHTML = `<h3>Shot ${i + 1} — ${s.title}</h3><span class="meta">${s.category.toUpperCase()} · ${d.aspect}</span>`;
+    header.innerHTML = `<h3>${it.title}</h3><span class="meta">${it.meta} · ${d.aspect}</span>`;
     const pre = document.createElement("pre");
-    pre.textContent = prompt;
+    pre.textContent = it.prompt;
     const btn = document.createElement("button");
     btn.className = "copy-btn";
     btn.textContent = "Copy prompt";
-    btn.onclick = () => copyText(prompt, btn);
+    btn.onclick = () => copyText(it.prompt, btn);
     card.append(header, pre, btn);
     out.appendChild(card);
   });
@@ -530,6 +726,17 @@ document.getElementById("export-json").onclick = () => {
   URL.revokeObjectURL(a.href);
 };
 
+function renderDeckOptions() {
+  const sel = document.getElementById("deck-select");
+  DECKS.forEach((deck) => {
+    const o = document.createElement("option");
+    o.value = deck.id;
+    o.textContent = deck.title;
+    sel.appendChild(o);
+  });
+}
+
 renderPresets();
 renderFilter();
 renderScenes();
+renderDeckOptions();

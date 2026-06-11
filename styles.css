@@ -153,6 +153,16 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .scene.selected .tick { opacity: 1; }
 
+.deck-box {
+  margin-top: 20px;
+  border: 1px dashed var(--gold);
+  border-radius: 8px;
+  padding: 16px;
+  background: rgba(201, 164, 92, 0.05);
+}
+.deck-box label { color: var(--gold-bright); font-size: 12.5px; }
+.deck-box .hint { margin: 10px 0 0; }
+
 .actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0 28px; }
 .btn-gold, .btn-ghost, .copy-btn {
   font-family: inherit;
