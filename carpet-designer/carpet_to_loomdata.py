@@ -17,24 +17,35 @@ This produces, using "loomdata" as the base name:
 Color numbering: colors are numbered 1..N in order of how often they appear
 (1 = most-used color), matching the legend produced by the carpet-designer
 web tool, so the same numbers line up if you used that tool for the palette.
+
+This version streams the image row by row, so it handles very large knot
+grids (e.g. 6000 x 27000) without loading millions of Python objects.
 """
 
 import argparse
 from PIL import Image
 
+# Loom carpet maps are legitimately huge; disable the decompression-bomb guard.
+Image.MAX_IMAGE_PIXELS = None
 
-def load_indexed_grid(path):
+
+def load_indexed(path):
     img = Image.open(path)
     if img.mode != "P":
         img = img.convert("P", palette=Image.ADAPTIVE)
     palette = img.getpalette()
     w, h = img.size
-    pixels = list(img.getdata())
+    data = img.tobytes()  # one byte (palette index) per pixel, row-major
+    return data, w, h, palette
 
-    # collect colors actually used, ordered by frequency (most used = 1)
+
+def build_remap(data, palette):
+    """Count colors and renumber them by frequency (most used = color 1)."""
     counts = {}
-    for p in pixels:
-        counts[p] = counts.get(p, 0) + 1
+    for i in range(256):
+        c = data.count(i)          # C-level scan, fast even for huge images
+        if c:
+            counts[i] = c
     ordered = sorted(counts.keys(), key=lambda idx: -counts[idx])
     remap = {old: new for new, old in enumerate(ordered)}  # 0-based new index
 
@@ -42,12 +53,17 @@ def load_indexed_grid(path):
     for old_idx in ordered:
         r, g, b = palette[old_idx * 3: old_idx * 3 + 3]
         hexes.append(f"#{r:02x}{g:02x}{b:02x}")
-
-    grid = [[remap[pixels[y * w + x]] for x in range(w)] for y in range(h)]
-    return grid, hexes, counts, remap, ordered
+    return counts, ordered, remap, hexes
 
 
-def write_legend(path, hexes, counts, remap, ordered, total):
+def row_indices(data, w, h, bottom_up):
+    """Yield each row as the slice of palette indices for that weft pick."""
+    order = range(h - 1, -1, -1) if bottom_up else range(h)
+    for y in order:
+        yield data[y * w:(y + 1) * w]
+
+
+def write_legend(path, hexes, counts, ordered, total):
     with open(path, "w", encoding="utf-8") as f:
         f.write("ColorNumber,Hex,KnotCount,Percent\n")
         for new_idx, old_idx in enumerate(ordered):
@@ -55,20 +71,22 @@ def write_legend(path, hexes, counts, remap, ordered, total):
             f.write(f"{new_idx + 1},{hexes[new_idx]},{cnt},{100 * cnt / total:.2f}\n")
 
 
-def write_grid(path, grid):
+def write_grid(path, data, w, h, remap, bottom_up):
     with open(path, "w", encoding="utf-8") as f:
-        for row in grid:
-            f.write(",".join(str(c + 1) for c in row) + "\n")
+        for rowbytes in row_indices(data, w, h, bottom_up):
+            f.write(",".join(str(remap[b] + 1) for b in rowbytes) + "\n")
 
 
-def write_rle(path, grid):
+def write_rle(path, data, w, h, remap, bottom_up):
     with open(path, "w", encoding="utf-8") as f:
         f.write("# Each line = one weft pick (row), bottom row first is typical loom order\n")
         f.write("# Format: color:count, color:count, ...\n")
-        for row in grid:
+        for rowbytes in row_indices(data, w, h, bottom_up):
             runs = []
-            cur, cnt = row[0], 1
-            for c in row[1:]:
+            cur = remap[rowbytes[0]]
+            cnt = 1
+            for b in rowbytes[1:]:
+                c = remap[b]
                 if c == cur:
                     cnt += 1
                 else:
@@ -85,21 +103,25 @@ def main():
     parser.add_argument("--bottom-up", action="store_true",
                          help="Reverse row order so row 1 = bottom of the carpet "
                               "(many looms weave from the bottom edge upward)")
+    parser.add_argument("--no-grid", action="store_true",
+                         help="Skip the full grid CSV (it can be very large for "
+                              "big carpets); still writes legend and RLE")
     args = parser.parse_args()
 
-    grid, hexes, counts, remap, ordered = load_indexed_grid(args.input)
+    data, w, h, palette = load_indexed(args.input)
+    counts, ordered, remap, hexes = build_remap(data, palette)
     total = sum(counts.values())
 
-    if args.bottom_up:
-        grid = grid[::-1]
+    write_legend(f"{args.outbase}_legend.csv", hexes, counts, ordered, total)
+    write_rle(f"{args.outbase}_rle.txt", data, w, h, remap, args.bottom_up)
+    if not args.no_grid:
+        write_grid(f"{args.outbase}_grid.csv", data, w, h, remap, args.bottom_up)
 
-    write_legend(f"{args.outbase}_legend.csv", hexes, counts, remap, ordered, total)
-    write_grid(f"{args.outbase}_grid.csv", grid)
-    write_rle(f"{args.outbase}_rle.txt", grid)
-
-    rows, cols = len(grid), len(grid[0])
-    print(f"{rows} rows x {cols} cols, {len(ordered)} colors")
-    print(f"Wrote {args.outbase}_legend.csv, {args.outbase}_grid.csv, {args.outbase}_rle.txt")
+    print(f"{h} rows x {w} cols, {len(ordered)} colors")
+    written = f"{args.outbase}_legend.csv, {args.outbase}_rle.txt"
+    if not args.no_grid:
+        written += f", {args.outbase}_grid.csv"
+    print(f"Wrote {written}")
 
 
 if __name__ == "__main__":
