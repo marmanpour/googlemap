@@ -24,6 +24,12 @@ photoshoot **shot list of prompts for Nano Banana 2 in Google Flow**.
 
 Export the whole shot list as JSON or copy all prompts at once.
 
+## Other tools in this repo
+
+- [`carpet-designer/`](carpet-designer/) — a separate tool that turns a carpet
+  photo into a weavable color map (point paper) matched to a factory's actual
+  yarn palette.
+
 ## Run it
 
 No build step. Open `index.html` in any browser, or:
