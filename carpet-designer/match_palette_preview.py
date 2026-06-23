@@ -1,68 +1,67 @@
 """
 Show what a carpet design would look like if every color in it were replaced
 by the closest matching color from your factory's yarn palette - at the
-design's own resolution (NOT resized to the knot grid), purely so you and the
-customer can see the realistic color match before weaving.
+design's OWN resolution (not resized), so you and the customer see the
+realistic color match in full detail before weaving.
 
-This uses Lab color space (perceptually accurate, same method professional
-color-matching tools use) instead of plain RGB, so the nearest match is the
-one that actually LOOKS most similar to a human eye, not just numerically
-closest.
+Color matching is done in Lab color space (perceptually accurate, the same
+idea professional color-matching tools use), so the nearest yarn is the one
+that actually LOOKS most similar to the human eye, not just numerically
+closest in RGB.
 
 Usage:
     python match_palette_preview.py design.png matched_preview.png --palette "#aabbcc,#112233,..."
-    python match_palette_preview.py design.png matched_preview.png --palette factory_palette.txt
+    python match_palette_preview.py design.png matched_preview.png --palette factory_palette.txt --clean 3
+
+Quality tips:
+    * Feed the LARGEST / highest-resolution version of the design you have.
+      The output keeps the exact same width x height, so detail in = detail out.
+    * Mapping every pixel to only 12 colors can leave tiny "salt and pepper"
+      speckles where the original had a smooth gradient. --clean N removes
+      isolated speckles using a majority filter (try 3, or 5 for a cleaner
+      look). --clean 0 (default) keeps every pixel = maximum detail.
 
 Output:
-    - matched_preview.png : same size as the input image, every pixel mapped
-      to the nearest palette color
-    - prints a small report: each palette color and what % of the image
-      matched to it
+    * matched_preview.png : same size as input, every pixel = nearest yarn
+    * a short report: each yarn color and what % of the image used it
 """
 
 import argparse
-import math
-from PIL import Image
+import numpy as np
+from PIL import Image, ImageFilter
 
 from carpet_prepare import parse_palette
 
-
-def srgb_to_linear(c):
-    c = c / 255.0
-    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+# A design rendered to 12 flat colors is small data, but the source can be big.
+Image.MAX_IMAGE_PIXELS = None
 
 
-def rgb_to_lab(r, g, b):
-    rl, gl, bl = srgb_to_linear(r), srgb_to_linear(g), srgb_to_linear(b)
-    x = rl * 0.4124564 + gl * 0.3575761 + bl * 0.1804375
-    y = rl * 0.2126729 + gl * 0.7151522 + bl * 0.0721750
-    z = rl * 0.0193339 + gl * 0.1191920 + bl * 0.9503041
+def srgb_to_linear(arr):
+    """arr: float array in 0..1 -> linear-light RGB."""
+    return np.where(arr <= 0.04045, arr / 12.92, ((arr + 0.055) / 1.055) ** 2.4)
 
-    xn, yn, zn = 0.95047, 1.0, 1.08883
-    x, y, z = x / xn, y / yn, z / zn
+
+def rgb_to_lab(rgb):
+    """rgb: array (..., 3) uint8 -> Lab array (..., 3) float, D65."""
+    rgb = rgb.astype(np.float64) / 255.0
+    lin = srgb_to_linear(rgb)
+    r, g, b = lin[..., 0], lin[..., 1], lin[..., 2]
+
+    x = r * 0.4124564 + g * 0.3575761 + b * 0.1804375
+    y = r * 0.2126729 + g * 0.7151522 + b * 0.0721750
+    z = r * 0.0193339 + g * 0.1191920 + b * 0.9503041
+
+    x /= 0.95047
+    z /= 1.08883  # y normalized by 1.0
 
     def f(t):
-        return t ** (1 / 3) if t > 0.008856 else (7.787 * t) + (16 / 116)
+        return np.where(t > 0.008856, np.cbrt(t), 7.787 * t + 16.0 / 116.0)
 
     fx, fy, fz = f(x), f(y), f(z)
-    L = (116 * fy) - 16
-    a = 500 * (fx - fy)
-    b2 = 200 * (fy - fz)
-    return (L, a, b2)
-
-
-def lab_distance(lab1, lab2):
-    return math.sqrt(sum((c1 - c2) ** 2 for c1, c2 in zip(lab1, lab2)))
-
-
-def nearest_palette_index(rgb, palette_lab):
-    lab = rgb_to_lab(*rgb)
-    best_i, best_d = 0, float("inf")
-    for i, plab in enumerate(palette_lab):
-        d = lab_distance(lab, plab)
-        if d < best_d:
-            best_d, best_i = d, i
-    return best_i
+    L = 116.0 * fy - 16.0
+    a = 500.0 * (fx - fy)
+    bb = 200.0 * (fy - fz)
+    return np.stack([L, a, bb], axis=-1)
 
 
 def main():
@@ -72,34 +71,46 @@ def main():
     parser.add_argument("--palette", required=True,
                          help="Factory palette: hex codes (\"#aabbcc,#112233,...\") "
                               "or a path to a text file with one hex per line")
+    parser.add_argument("--clean", type=int, default=0,
+                         help="Despeckle strength: 0 = off (max detail), or an odd "
+                              "number like 3 or 5 to remove isolated speckles")
     args = parser.parse_args()
 
     rgb_list = parse_palette(args.palette)
-    palette_lab = [rgb_to_lab(r, g, b) for r, g, b in rgb_list]
+    palette = np.array(rgb_list, dtype=np.uint8)           # (K, 3)
+    palette_lab = rgb_to_lab(palette)                       # (K, 3)
 
     img = Image.open(args.input).convert("RGB")
-    pixels = list(img.tobytes())
-    pixels = [tuple(pixels[i:i + 3]) for i in range(0, len(pixels), 3)]
+    src = np.asarray(img)                                   # (H, W, 3) uint8
+    h, w = src.shape[:2]
+    src_lab = rgb_to_lab(src)                               # (H, W, 3) float
 
-    cache = {}
-    counts = [0] * len(rgb_list)
-    out_pixels = []
-    for px in pixels:
-        idx = cache.get(px)
-        if idx is None:
-            idx = nearest_palette_index(px, palette_lab)
-            cache[px] = idx
-        counts[idx] += 1
-        out_pixels.append(rgb_list[idx])
+    # Nearest palette color in Lab: loop over K colors (only 12), keep best.
+    best_idx = np.zeros((h, w), dtype=np.int32)
+    best_dist = np.full((h, w), np.inf)
+    for i, plab in enumerate(palette_lab):
+        d = ((src_lab - plab) ** 2).sum(axis=-1)
+        mask = d < best_dist
+        best_dist[mask] = d[mask]
+        best_idx[mask] = i
 
-    out_img = Image.new("RGB", img.size)
-    out_img.putdata(out_pixels)
-    out_img.save(args.output, format="PNG")
+    idx8 = best_idx.astype(np.uint8)
 
-    total = len(pixels)
-    print(f"Saved {args.output}: {img.size[0]}x{img.size[1]} px, "
-          f"matched to {len(rgb_list)} factory colors ({len(cache)} distinct "
-          f"source colors seen)")
+    # Optional despeckle: do it on the index map so we never invent new colors.
+    if args.clean and args.clean >= 3:
+        size = args.clean if args.clean % 2 == 1 else args.clean + 1
+        pimg = Image.fromarray(idx8, mode="P")
+        pimg.putpalette(palette.flatten().tolist() + [0] * (768 - palette.size))
+        pimg = pimg.filter(ImageFilter.ModeFilter(size))
+        idx8 = np.asarray(pimg)
+
+    out_rgb = palette[idx8]                                 # (H, W, 3)
+    Image.fromarray(out_rgb, mode="RGB").save(args.output, format="PNG")
+
+    total = h * w
+    counts = np.bincount(idx8.ravel(), minlength=len(rgb_list))
+    print(f"Saved {args.output}: {w}x{h} px, matched to {len(rgb_list)} factory "
+          f"colors (clean={args.clean})")
     print("Color usage in the matched preview:")
     for (r, g, b), cnt in zip(rgb_list, counts):
         if cnt:
